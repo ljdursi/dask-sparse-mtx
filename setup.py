@@ -17,11 +17,5 @@ setup(
     author_email='jonathan@dursi.ca',
     url='https://github.com/ljdursi/dask-sparse-mtx',
     license=license,
-    packages=find_packages(exclude=('tests', 'docs')),
-
-    entry_points={
-        'console_scripts': [
-            'create_mtx = create_mtx_db:main',
-        ],
-    }
+    packages=find_packages(exclude=('tests', 'docs'))
 )
