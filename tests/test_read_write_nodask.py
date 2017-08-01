@@ -11,7 +11,8 @@ import unittest
 import sparse
 import random
 import os
-from .context import dask_sparse_matrix as dsm
+from .context import dask_sparse_mtx as dsm
+#import dask_sparse_mtx as dsm
 
 
 class ReadWriteTest(unittest.TestCase):
