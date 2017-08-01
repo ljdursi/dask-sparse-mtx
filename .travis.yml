@@ -1,0 +1,16 @@
+language: python
+python:
+  - "2.7"
+sudo: false
+
+install:
+  - pip install pip --upgrade
+  - pip install setuptools
+  - pip install -r requirements.txt --upgrade --no-cache-dir
+  - python setup.py develop
+
+script: 
+  - flake8 dask_sparse_mtx/[a-z]*py tests/test_*py
+  - python -m unittest discover
+  - make clean -C docs
+  - make html -C docs

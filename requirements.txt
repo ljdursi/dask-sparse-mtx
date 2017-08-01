@@ -1,4 +1,5 @@
-unittest
 dask
+flake8
 pysqlite
 sparse
+sphinx
