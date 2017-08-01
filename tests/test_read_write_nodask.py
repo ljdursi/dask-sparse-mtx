@@ -12,7 +12,6 @@ import sparse
 import random
 import os
 from .context import dask_sparse_mtx as dsm
-#import dask_sparse_mtx as dsm
 
 
 class ReadWriteTest(unittest.TestCase):
@@ -62,8 +61,10 @@ class ReadWriteTest(unittest.TestCase):
     def test_multiply_chunks(self):
         """Extract chunks of matrix, ensure matrix multiplication results
            in correct shape."""
-        a = dsm.mtxdb_read_chunk(self._dbfile, 'A', rows=(50, 100), cols=(0, 100))
-        b = dsm.mtxdb_read_chunk(self._dbfile, 'B', rows=(0, 100), cols=(0, 50))
+        a = dsm.mtxdb_read_chunk(self._dbfile, 'A',
+                                 rows=(50, 100), cols=(0, 100))
+        b = dsm.mtxdb_read_chunk(self._dbfile, 'B',
+                                 rows=(0, 100), cols=(0, 50))
         c = sparse.tensordot(a, b, axes=1)
         assert c.shape == (50, 50)
 
