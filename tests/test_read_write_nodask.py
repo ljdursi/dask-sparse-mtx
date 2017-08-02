@@ -27,7 +27,7 @@ class ReadWriteTest(unittest.TestCase):
 
         # create matrices to write
         a = dsm.mtx_permutation(self._size)
-        b = dsm.mtx_transpose()
+        b = dsm.mtx_transpose(a)
         dsm.mtxdb_add_matrix_from_dict(self._dbfile, 'A', a)
         dsm.mtxdb_add_matrix_from_dict(self._dbfile, 'B', b)
 
