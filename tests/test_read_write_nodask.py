@@ -9,7 +9,6 @@
 
 import unittest
 import sparse
-import random
 import os
 from .context import dask_sparse_mtx as dsm
 
@@ -27,10 +26,8 @@ class ReadWriteTest(unittest.TestCase):
         dsm.mtxdb_init(self._dbfile)
 
         # create matrices to write
-        permutation = range(self._size)
-        random.shuffle(permutation)
-        a = {(i, permutation[i]): 1.0 for i in range(self._size)}
-        b = {(permutation[i], i): 1.0 for i in range(self._size)}
+        a = dsm.mtx_permutation(self._size)
+        b = dsm.mtx_transpose()
         dsm.mtxdb_add_matrix_from_dict(self._dbfile, 'A', a)
         dsm.mtxdb_add_matrix_from_dict(self._dbfile, 'B', b)
 
