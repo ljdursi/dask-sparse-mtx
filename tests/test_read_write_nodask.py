@@ -48,12 +48,7 @@ class ReadWriteTest(unittest.TestCase):
         assert n == self._size
 
         # ensure all diagonal elements are present and have value 1
-        remaining = set(range(n))
-        for i, j, v in zip(c.coords[0], c.coords[1], c.data):
-            assert v == 1.0
-            assert i == j
-            remaining.remove(i)
-        assert len(remaining) == 0
+        assert dsm.mtx_is_identity(c)
 
     def test_multiply_chunks(self):
         """Extract chunks of matrix, ensure matrix multiplication results
