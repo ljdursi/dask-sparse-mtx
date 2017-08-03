@@ -33,25 +33,23 @@ def dask_array_mult(dbname, a, b, tilesize):
     def da_delayed_tile(mname, i, j):
         r = (i*tilesize, (i+1)*tilesize)
         c = (j*tilesize, (j+1)*tilesize)
-        return da.from_delayed(delayed(dsm.mtxdb_read_chunk)
-                               (dbname, mname, rows=r, cols=c),
-                               (tilesize, tilesize), float)
+        tile = delayed(dsm.mtxdb_read_chunk)(dbname, mname, rows=r, cols=c)
+        return da.from_delayed(tile, (tilesize, tilesize), float)
 
     def ntiles(size, tilesize):
         return (size+tilesize-1)//tilesize
 
     # construct the arrays with da.concatenate
-    arows = []
-    for i in range(ntiles(na, tilesize)):
-        acols = [da_delayed_tile(a, i, j) for j in range(ntiles(ma, tilesize))]
-        arows.append(da.concatenate(acols, axis=1))
-    a = da.concatenate(arows, axis=0)
+    def tiled_dask_array(mname, n, m):
+        rows = []
+        for i in range(ntiles(n, tilesize)):
+            cols = [da_delayed_tile(mname, i, j)
+                    for j in range(ntiles(m, tilesize))]
+            rows.append(da.concatenate(cols, axis=1))
+        return da.concatenate(rows, axis=0)
 
-    brows = []
-    for i in range(ntiles(nb, tilesize)):
-        bcols = [da_delayed_tile(a, i, j) for j in range(ntiles(mb, tilesize))]
-        brows.append(da.concatenate(bcols, axis=1))
-    b = da.concatenate(arows, axis=0)
+    amat = tiled_dask_array(a, na, ma)
+    bmat = tiled_dask_array(b, nb, mb)
 
     # perform the multiplication with da.tensordot
-    return da.tensordot(a, b, axes=1).compute()
+    return da.dot(amat, bmat).compute()
