@@ -1,5 +1,7 @@
+cloudpickle
 dask
 flake8
 pysqlite
 sparse
 sphinx
+toolz
