@@ -46,6 +46,29 @@ def mtxdb_add_matrix_from_dict(filename, mtxname, mtxdict):
     c.close()
 
 
+def mtxdb_matrix_shape(filename, mtxname):
+    """Returns the shape of a sparse matrix in the db.
+
+    :param filename: name of the sqlite3 db in which the matrix is stored
+    :param mtname: name of the matrix(string)
+    :rtype: (rowmin, rowmax, colmin, colmax): min/max of rows and columns
+    """
+    conn = sqlite3.connect(filename)
+    c = conn.cursor()
+    query = (mtxname,)
+
+    c.execute("select min(i), max(i) from matrices where matrix = ?", query)
+    result = c.fetchall()
+    rowmin, rowmax = result[0]
+
+    c.execute("select min(j), max(j) from matrices where matrix = ?", query)
+    result = c.fetchall()
+    colmin, colmax = result[0]
+    c.close()
+
+    return rowmin, rowmax, colmin, colmax
+
+
 def mtxdb_read_chunk(filename, mtxname, rows=None, cols=None):
     """Reads a whole or partial matrix from a sqlite3 db into
        a mod:`sparse` COO matrix
@@ -58,18 +81,8 @@ def mtxdb_read_chunk(filename, mtxname, rows=None, cols=None):
     :param cols: as with rows, but for columns
     :rtype: mod:`sparse` COO matrix
     """
-    conn = sqlite3.connect(filename)
-    c = conn.cursor()
-
-    query = (mtxname,)
-    c.execute("select min(i), max(i) from matrices where matrix = ?", query)
-    result = c.fetchall()
-    rowmin, rowmax = result[0]
+    rowmin, rowmax, colmin, colmax = mtxdb_matrix_shape(filename, mtxname)
     rowmax += 1
-
-    c.execute("select min(j), max(j) from matrices where matrix = ?", query)
-    result = c.fetchall()
-    colmin, colmax = result[0]
     colmax += 1
 
     # determine range of matrix we will be returning
@@ -87,6 +100,8 @@ def mtxdb_read_chunk(filename, mtxname, rows=None, cols=None):
     nrows, ncols = maxrows-minrows, maxcols-mincols
 
     # get matrix chunk
+    conn = sqlite3.connect(filename)
+    c = conn.cursor()
     query = (mtxname, minrows, maxrows, mincols, maxcols)
     c.execute("""select i, j, value from matrices
                  where matrix = ? and i >= ? and i < ?
