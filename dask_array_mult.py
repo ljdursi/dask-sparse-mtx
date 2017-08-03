@@ -46,7 +46,11 @@ for i in range(nchunks):
 a = da.concatenate(arows, axis=0)
 b = da.concatenate(brows, axis=0)
 
-c = da.dot(a, b)
-print(c)
-for i in range(size):
-    print i, c[i,i]
+print("arows[0] = ", arows[0])
+print("a = ", a)
+
+print("a.sum() = ", a.sum().compute())
+print("b.sum() = ", b.sum().compute())
+c = da.tensordot(a, b, axes=1).compute()
+for i, j, v in zip(c.coords[0], c.coords[1], c.data):
+    print i, j, v
