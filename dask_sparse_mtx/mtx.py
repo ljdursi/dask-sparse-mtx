@@ -5,6 +5,7 @@
 
 """
 import random
+import sparse
 
 
 def mtx_permutation(size):
@@ -26,3 +27,33 @@ def mtx_transpose(dictmtx):
     :rtype: dictionary of (row, col): val matrix entries
     """
     return {(j, i): dictmtx[(i, j)] for i, j in dictmtx.keys()}
+
+
+def mtx_is_identity(mtx):
+    """Returns True if matrix (dict or sparse.COO) is the identity matrix
+    False otherwise
+
+    :param mtx: sparse.COO or dict matrix
+    :rtype: Bool: True if identity
+    """
+    if type(mtx) is dict:
+        rows, cols = zip(*mtx.keys())
+        n, m = max(rows), max(cols)
+        vals = mtx.values()
+    elif isinstance(mtx, sparse.COO):
+        n, m = mtx.shape
+        rows, cols = mtx.coords[0], mtx.coords[1]
+        vals = mtx.data
+    else:
+        return False
+
+    if n != m:
+        return False
+    remaining = set(range(n))
+    for i, j, v in zip(rows, cols, vals):
+        if i != j:
+            return False
+        if v != 1:
+            return False
+        remaining.remove(i)
+    return len(remaining) == 0
