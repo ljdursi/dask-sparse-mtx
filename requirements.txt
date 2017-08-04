@@ -2,6 +2,6 @@ cloudpickle
 dask
 flake8
 pysqlite
-git+https//github.com/ljdursi/sparse.git
+git+https://github.com/ljdursi/sparse.git
 sphinx
 toolz
