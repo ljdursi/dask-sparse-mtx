@@ -43,8 +43,6 @@ class SparseMultDaskArray(unittest.TestCase):
         "Make sure full matrix multiplication gives identity matrix"
         tilesize = (self._size+10-1)//10
         c = dsm.dask_array_mult(self._dbfile, 'A', 'B', tilesize)
-        for i, j, v in zip(c.coords[0], c.coords[1], c.data):
-            print i, j, v
         assert dsm.mtx_is_identity(c)
 
     def test_multiply_dask_array_1tile(self):
