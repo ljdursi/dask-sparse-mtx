@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# dask_sparse_mtx documentation build configuration file, created by
-# sphinx-quickstart on Mon Jul 31 22:36:07 2017.
+# dask-sparse-mtx documentation build configuration file, created by
+# sphinx-quickstart on Fri Aug  4 16:54:16 2017.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -31,7 +31,9 @@
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.mathjax',
+    'sphinx.ext.imgmath',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.githubpages',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -51,7 +53,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'dask_sparse_mtx'
+project = u'dask-sparse-mtx'
 copyright = u'2017, Jonathan Dursi'
 author = u'Jonathan Dursi'
 
@@ -136,7 +138,7 @@ html_theme = 'alabaster'
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
 #
-# html_title = u'dask_sparse_mtx v0.1'
+# html_title = u'dask-sparse-mtx v0.1'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #
@@ -236,7 +238,7 @@ html_static_path = ['_static']
 # html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'dask_sparse_mtxdoc'
+htmlhelp_basename = 'dask-sparse-mtxdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -262,7 +264,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'dask_sparse_mtx.tex', u'dask\\_sparse\\_mtx Documentation',
+    (master_doc, 'dask-sparse-mtx.tex', u'dask-sparse-mtx Documentation',
      u'Jonathan Dursi', 'manual'),
 ]
 
@@ -304,7 +306,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'dask_sparse_mtx', u'dask_sparse_mtx Documentation',
+    (master_doc, 'dask-sparse-mtx', u'dask-sparse-mtx Documentation',
      [author], 1)
 ]
 
@@ -319,8 +321,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'dask_sparse_mtx', u'dask_sparse_mtx Documentation',
-     author, 'dask_sparse_mtx', 'One line description of project.',
+    (master_doc, 'dask-sparse-mtx', u'dask-sparse-mtx Documentation',
+     author, 'dask-sparse-mtx', 'One line description of project.',
      'Miscellaneous'),
 ]
 

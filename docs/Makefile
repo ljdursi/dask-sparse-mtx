@@ -91,9 +91,9 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/dask_sparse_mtx.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/dask-sparse-mtx.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/dask_sparse_mtx.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/dask-sparse-mtx.qhc"
 
 .PHONY: applehelp
 applehelp:
@@ -110,8 +110,8 @@ devhelp:
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
-	@echo "# mkdir -p $$HOME/.local/share/devhelp/dask_sparse_mtx"
-	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/dask_sparse_mtx"
+	@echo "# mkdir -p $$HOME/.local/share/devhelp/dask-sparse-mtx"
+	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/dask-sparse-mtx"
 	@echo "# devhelp"
 
 .PHONY: epub
