@@ -36,20 +36,19 @@ def dask_array_mult(dbname, a, b, tilesize):
         tile = delayed(dsm.mtxdb_read_chunk)(dbname, mname, rows=r, cols=c)
         return da.from_delayed(tile, (tilesize, tilesize), float)
 
-    def ntiles(size, tilesize):
+    def ntiles(size):
         return (size+tilesize-1)//tilesize
 
     # construct the arrays with da.concatenate
     def tiled_dask_array(mname, n, m):
         rows = []
-        for i in range(ntiles(n, tilesize)):
-            cols = [da_delayed_tile(mname, i, j)
-                    for j in range(ntiles(m, tilesize))]
+        for ti in range(ntiles(n)):
+            cols = [da_delayed_tile(mname, ti, tj) for tj in range(ntiles(m))]
             rows.append(da.concatenate(cols, axis=1))
         return da.concatenate(rows, axis=0)
 
     amat = tiled_dask_array(a, na, ma)
     bmat = tiled_dask_array(b, nb, mb)
 
-    # perform the multiplication with da.tensordot
+    # perform the multiplication
     return da.dot(amat, bmat).compute()

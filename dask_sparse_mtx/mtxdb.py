@@ -6,6 +6,7 @@
 """
 import sqlite3
 import sparse
+import numpy
 
 
 def mtxdb_init(filename):
@@ -66,7 +67,7 @@ def mtxdb_matrix_shape(filename, mtxname):
     colmin, colmax = result[0]
     c.close()
 
-    return rowmin, rowmax, colmin, colmax
+    return rowmin, rowmax+1, colmin, colmax+1
 
 
 def mtxdb_read_chunk(filename, mtxname, rows=None, cols=None):
@@ -82,8 +83,6 @@ def mtxdb_read_chunk(filename, mtxname, rows=None, cols=None):
     :rtype: mod:`sparse` COO matrix
     """
     rowmin, rowmax, colmin, colmax = mtxdb_matrix_shape(filename, mtxname)
-    rowmax += 1
-    colmax += 1
 
     # determine range of matrix we will be returning
     def range_from_option(option, lo, hi):
@@ -111,4 +110,6 @@ def mtxdb_read_chunk(filename, mtxname, rows=None, cols=None):
 
     result = sorted(result)
     coords = {(i-minrows, j-mincols): v for (i, j, v) in result}
-    return sparse.COO(coords, shape=(nrows, ncols))
+    c = sparse.COO(coords, shape=(nrows, ncols))
+    c.coords = c.coords.astype(numpy.int64)
+    return c
