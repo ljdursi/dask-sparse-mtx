@@ -4,6 +4,54 @@ Sparse Matrix Multiplication with Dask
 .. image:: https://travis-ci.org/ljdursi/dask-sparse-mtx.svg?branch=master
     :target: https://travis-ci.org/ljdursi/dask-sparse-mtx
 
-Toy example of performing large
-[sparse](https://github.com/mrocklin/sparse/) matrix multiplication
+Toy example of performing large `sparse <https://github.com/mrocklin/sparse/>`_ matrix multiplication
 with dask, with the data in an sqlite3 db.
+
+This package can be installed as follows::
+
+    # install into a venv
+    virtualenv dsm
+    cd dsm/
+    source bin/activate
+
+    # clone and install
+    git clone https://github.com/ljdursi/dask-sparse-mtx
+    cd dask-sparse-mtx/
+    pip install -r requirements.txt
+    python setup.py install
+
+    # run tests
+    python -m unittest discover
+
+A sample program follows (this will take several minutes to run:)::
+
+    import os
+    import dask.multiprocessing
+    import dask_sparse_mtx as dsm
+
+    dask.set_options(get=dask.multiprocessing.get)
+
+    filename = "test.db"
+    size = 100000
+
+    # create file
+    dsm.mtxdb_init(filename)
+
+    # create matrices and write them; their product
+    # will be the identity matrix
+    a = dsm.mtx_permutation(size)
+    b = dsm.mtx_transpose(a)
+    dsm.mtxdb_add_matrix_from_dict(filename, 'A', a)
+    dsm.mtxdb_add_matrix_from_dict(filename, 'B', b)
+
+    # smaller tilesize == more parallelism, but more
+    # overhead from task management
+    tilesize = 10000
+    c = dsm.dask_array_mult(filename, 'A', 'B', tilesize)
+
+    print c[:10, :10]
+
+    if dsm.mtx_is_identity(c):
+        print "Success!"
+
+    os.remove(filename)
