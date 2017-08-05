@@ -1,8 +1,3 @@
-.. dask_sparse_mtx documentation master file, created by
-   sphinx-quickstart on Mon Jul 31 22:36:07 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 dask_sparse_mtx
 ===============
 
@@ -80,7 +75,7 @@ Sparse Matrix DB
 These rely on routines for reading/writing the sparse matrices (in COO format)
 into the sqlite3 db:
 
-.. automodule:: dask_sparse_mtx
+.. automodule:: dask_sparse_mtx.mtxdb
     :members: mtxdb_init, mtxdb_add_matrix_from_dict, mtxdb_read_chunk, mtxdb_matrix_shape
 
 Sparse Matrix Helper Methods
@@ -89,7 +84,7 @@ Sparse Matrix Helper Methods
 And finally there are helper routines for creating simple permutation 
 matricies useful for tests:
 
-.. automodule:: dask_sparse_mtx
+.. automodule:: dask_sparse_mtx.mtx
     :members: mtx_permutation, mtx_transpose, mtx_is_identity
 
 

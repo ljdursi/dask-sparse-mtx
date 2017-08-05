@@ -8,8 +8,8 @@
     
     <title>dask_sparse_mtx &#8212; dask-sparse-mtx 0.1 documentation</title>
     
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -20,9 +20,9 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="top" title="dask-sparse-mtx 0.1 documentation" href="#" /> 
   </head>
   <body role="document">
@@ -57,7 +57,7 @@ into tasks, and then either manually (using
 provided by <code class="docutils literal"><span class="pre">dask.array</span></code> (using <a class="reference internal" href="#module-dask_sparse_mtx.dask_array_mult" title="dask_sparse_mtx.dask_array_mult"><code class="xref py py-func docutils literal"><span class="pre">dask_sparse_mtx.dask_array_mult()</span></code></a>)
 multiplies the two matrices in a tiled manner:</p>
 <div class="math">
-<p><img src="_images/math/670e5a071506f2c6b2b42d54a4f7d1697f90cdd9.png" alt="\left( \begin{array}{c|c|c|c} C_{1,1} &amp; C_{1,2} &amp; \dots &amp; C_{1,M} \\ \hline C_{2,1} &amp; C_{2,2} &amp; \dots &amp; C_{2,M} \\ \hline \dots &amp; \dots &amp; \dots &amp; \dots \\ \hline C_{N,1} &amp; C_{N,2} &amp; \dots &amp; C_{N,M} \\ \end{array} \right ) &amp; = \left( \begin{array}{c|c|c|c} A_{1,1} &amp; A_{1,2} &amp; \dots &amp; A_{1,K} \\ \hline A_{2,1} &amp; A_{2,2} &amp; \dots &amp; A_{2,K} \\ \hline \dots &amp; \dots &amp; \dots &amp; \dots \\ \hline A_{N,1} &amp; A_{N,2} &amp; \dots &amp; A_{N,K} \\ \end{array} \right ) \left( \begin{array}{c|c|c|c} B_{1,1} &amp; B_{1,2} &amp; \dots &amp; B_{1,M} \\ \hline B_{2,1} &amp; B_{2,2} &amp; \dots &amp; B_{2,M} \\ \hline \dots &amp; \dots &amp; \dots &amp; \dots \\ \hline B_{K,1} &amp; B_{K,2} &amp; \dots &amp; B_{K,M} \\ \end{array} \right )
+<p><img src="images/math/670e5a071506f2c6b2b42d54a4f7d1697f90cdd9.png" alt="\left( \begin{array}{c|c|c|c} C_{1,1} &amp; C_{1,2} &amp; \dots &amp; C_{1,M} \\ \hline C_{2,1} &amp; C_{2,2} &amp; \dots &amp; C_{2,M} \\ \hline \dots &amp; \dots &amp; \dots &amp; \dots \\ \hline C_{N,1} &amp; C_{N,2} &amp; \dots &amp; C_{N,M} \\ \end{array} \right ) &amp; = \left( \begin{array}{c|c|c|c} A_{1,1} &amp; A_{1,2} &amp; \dots &amp; A_{1,K} \\ \hline A_{2,1} &amp; A_{2,2} &amp; \dots &amp; A_{2,K} \\ \hline \dots &amp; \dots &amp; \dots &amp; \dots \\ \hline A_{N,1} &amp; A_{N,2} &amp; \dots &amp; A_{N,K} \\ \end{array} \right ) \left( \begin{array}{c|c|c|c} B_{1,1} &amp; B_{1,2} &amp; \dots &amp; B_{1,M} \\ \hline B_{2,1} &amp; B_{2,2} &amp; \dots &amp; B_{2,M} \\ \hline \dots &amp; \dots &amp; \dots &amp; \dots \\ \hline B_{K,1} &amp; B_{K,2} &amp; \dots &amp; B_{K,M} \\ \end{array} \right )
 
 C_{i,j} &amp; = \sum_{k}^K A_{i,k} B_{k,j}"/></p>
 </div><p>where the multiplication in the second line above is matrix multiplication.</p>
