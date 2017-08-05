@@ -69,7 +69,7 @@ C_{i,j} &amp; = \sum_{k}^K A_{i,k} B_{k,j}"/></p>
 <span class="n">dask</span><span class="o">.</span><span class="n">set_options</span><span class="p">(</span><span class="n">get</span><span class="o">=</span><span class="n">dask</span><span class="o">.</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
 
 <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;test.db&quot;</span>
-<span class="n">size</span> <span class="o">=</span> <span class="mi">200000</span>
+<span class="n">size</span> <span class="o">=</span> <span class="mi">20000</span>
 
 <span class="c1"># create file</span>
 <span class="n">dsm</span><span class="o">.</span><span class="n">mtxdb_init</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
@@ -83,7 +83,7 @@ C_{i,j} &amp; = \sum_{k}^K A_{i,k} B_{k,j}"/></p>
 
 <span class="c1"># smaller tilesize - more parallelism, but more</span>
 <span class="c1"># overhead from task management</span>
-<span class="n">tilesize</span> <span class="o">=</span> <span class="mi">20000</span>
+<span class="n">tilesize</span> <span class="o">=</span> <span class="mi">2000</span>
 <span class="n">c</span> <span class="o">=</span> <span class="n">dsm</span><span class="o">.</span><span class="n">dask_array_mult</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">tilesize</span><span class="p">)</span>
 
 <span class="nb">print</span> <span class="n">c</span><span class="p">[:</span><span class="mi">10</span><span class="p">,</span> <span class="p">:</span><span class="mi">10</span><span class="p">]</span>
@@ -94,6 +94,7 @@ C_{i,j} &amp; = \sum_{k}^K A_{i,k} B_{k,j}"/></p>
 <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>And using dask.distributed this computation can be run across several hosts.</p>
 </div>
 <div class="section" id="matrix-multiplication">
 <h2>Matrix Multiplication<a class="headerlink" href="#matrix-multiplication" title="Permalink to this headline">¶</a></h2>
@@ -175,9 +176,13 @@ read in to do the multiplication</li>
 <h2>Sparse Matrix DB<a class="headerlink" href="#sparse-matrix-db" title="Permalink to this headline">¶</a></h2>
 <p>These rely on routines for reading/writing the sparse matrices (in COO format)
 into the sqlite3 db:</p>
-<span class="target" id="module-dask_sparse_mtx"></span><dl class="function">
-<dt id="dask_sparse_mtx.mtxdb_init">
-<code class="descclassname">dask_sparse_mtx.</code><code class="descname">mtxdb_init</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtxdb_init" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="module-dask_sparse_mtx.mtxdb"></span><dl class="docutils">
+<dt>Reads/writes sparse matrices (in COO format) into</dt>
+<dd>sqlite3 db</dd>
+</dl>
+<dl class="function">
+<dt id="dask_sparse_mtx.mtxdb.mtxdb_init">
+<code class="descclassname">dask_sparse_mtx.mtxdb.</code><code class="descname">mtxdb_init</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtxdb.mtxdb_init" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initializes an sqlite3 db for writing sparse matrices.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -190,8 +195,8 @@ into the sqlite3 db:</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="dask_sparse_mtx.mtxdb_add_matrix_from_dict">
-<code class="descclassname">dask_sparse_mtx.</code><code class="descname">mtxdb_add_matrix_from_dict</code><span class="sig-paren">(</span><em>filename</em>, <em>mtxname</em>, <em>mtxdict</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtxdb_add_matrix_from_dict" title="Permalink to this definition">¶</a></dt>
+<dt id="dask_sparse_mtx.mtxdb.mtxdb_add_matrix_from_dict">
+<code class="descclassname">dask_sparse_mtx.mtxdb.</code><code class="descname">mtxdb_add_matrix_from_dict</code><span class="sig-paren">(</span><em>filename</em>, <em>mtxname</em>, <em>mtxdict</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtxdb.mtxdb_add_matrix_from_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes a matrix in COO format to sqlite3 db &#8216;filename&#8217;.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -210,8 +215,8 @@ coordinates and data</li>
 </dd></dl>
 
 <dl class="function">
-<dt id="dask_sparse_mtx.mtxdb_read_chunk">
-<code class="descclassname">dask_sparse_mtx.</code><code class="descname">mtxdb_read_chunk</code><span class="sig-paren">(</span><em>filename</em>, <em>mtxname</em>, <em>rows=None</em>, <em>cols=None</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtxdb_read_chunk" title="Permalink to this definition">¶</a></dt>
+<dt id="dask_sparse_mtx.mtxdb.mtxdb_read_chunk">
+<code class="descclassname">dask_sparse_mtx.mtxdb.</code><code class="descname">mtxdb_read_chunk</code><span class="sig-paren">(</span><em>filename</em>, <em>mtxname</em>, <em>rows=None</em>, <em>cols=None</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtxdb.mtxdb_read_chunk" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Reads a whole or partial matrix from a sqlite3 db into</dt>
 <dd>a mod:<cite>sparse</cite> COO matrix</dd>
@@ -238,8 +243,8 @@ will read all rows</li>
 </dd></dl>
 
 <dl class="function">
-<dt id="dask_sparse_mtx.mtxdb_matrix_shape">
-<code class="descclassname">dask_sparse_mtx.</code><code class="descname">mtxdb_matrix_shape</code><span class="sig-paren">(</span><em>filename</em>, <em>mtxname</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtxdb_matrix_shape" title="Permalink to this definition">¶</a></dt>
+<dt id="dask_sparse_mtx.mtxdb.mtxdb_matrix_shape">
+<code class="descclassname">dask_sparse_mtx.mtxdb.</code><code class="descname">mtxdb_matrix_shape</code><span class="sig-paren">(</span><em>filename</em>, <em>mtxname</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtxdb.mtxdb_matrix_shape" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the shape of a sparse matrix in the db.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -263,9 +268,13 @@ will read all rows</li>
 <h2>Sparse Matrix Helper Methods<a class="headerlink" href="#sparse-matrix-helper-methods" title="Permalink to this headline">¶</a></h2>
 <p>And finally there are helper routines for creating simple permutation
 matricies useful for tests:</p>
-<span class="target" id="module-dask_sparse_mtx"></span><dl class="function">
-<dt id="dask_sparse_mtx.mtx_permutation">
-<code class="descclassname">dask_sparse_mtx.</code><code class="descname">mtx_permutation</code><span class="sig-paren">(</span><em>size</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtx_permutation" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="module-dask_sparse_mtx.mtx"></span><dl class="docutils">
+<dt>Routines for simple COO matrices expressed as dicts</dt>
+<dd>{(row, col): value } for test problems</dd>
+</dl>
+<dl class="function">
+<dt id="dask_sparse_mtx.mtx.mtx_permutation">
+<code class="descclassname">dask_sparse_mtx.mtx.</code><code class="descname">mtx_permutation</code><span class="sig-paren">(</span><em>size</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtx.mtx_permutation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a matrix in COO format as a dictionary
 describing a permutation matrix.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -281,8 +290,8 @@ describing a permutation matrix.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="dask_sparse_mtx.mtx_transpose">
-<code class="descclassname">dask_sparse_mtx.</code><code class="descname">mtx_transpose</code><span class="sig-paren">(</span><em>dictmtx</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtx_transpose" title="Permalink to this definition">¶</a></dt>
+<dt id="dask_sparse_mtx.mtx.mtx_transpose">
+<code class="descclassname">dask_sparse_mtx.mtx.</code><code class="descname">mtx_transpose</code><span class="sig-paren">(</span><em>dictmtx</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtx.mtx_transpose" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns transposes of a matrix in COO format (expressed as a dict).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -297,8 +306,8 @@ describing a permutation matrix.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="dask_sparse_mtx.mtx_is_identity">
-<code class="descclassname">dask_sparse_mtx.</code><code class="descname">mtx_is_identity</code><span class="sig-paren">(</span><em>mtx</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtx_is_identity" title="Permalink to this definition">¶</a></dt>
+<dt id="dask_sparse_mtx.mtx.mtx_is_identity">
+<code class="descclassname">dask_sparse_mtx.mtx.</code><code class="descname">mtx_is_identity</code><span class="sig-paren">(</span><em>mtx</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtx.mtx_is_identity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if matrix (dict or sparse.COO) is the identity matrix
 False otherwise</p>
 <table class="docutils field-list" frame="void" rules="none">
