@@ -23,7 +23,7 @@ This package can be installed as follows::
     # run tests
     python -m unittest discover
 
-A sample program follows (this will take several minutes to run:)::
+A sample program follows:)::
 
     import os
     import dask.multiprocessing
@@ -32,7 +32,7 @@ A sample program follows (this will take several minutes to run:)::
     dask.set_options(get=dask.multiprocessing.get)
 
     filename = "test.db"
-    size = 100000
+    size = 20000
 
     # create file
     dsm.mtxdb_init(filename)
@@ -46,7 +46,7 @@ A sample program follows (this will take several minutes to run:)::
 
     # smaller tilesize == more parallelism, but more
     # overhead from task management
-    tilesize = 10000
+    tilesize = 2000
     c = dsm.dask_array_mult(filename, 'A', 'B', tilesize)
 
     print c[:10, :10]
@@ -55,3 +55,12 @@ A sample program follows (this will take several minutes to run:)::
         print "Success!"
 
     os.remove(filename)
+
+Note one can use dask distributed, which offers a more sophisticated
+scheduler as well as the possibility to run over multiple nodes, as
+well: to run it on one host, one can ``pip install distributed`` and
+then in place of the ``dask.set_options`` line above one can use::
+
+    from dask.distributed import Client
+    client = Client()
+    dask.set_options(get=client.get)

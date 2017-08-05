@@ -33,7 +33,7 @@ The example can be run as follows (will take a few minutes)::
     dask.set_options(get=dask.multiprocessing.get)
 
     filename = "test.db"
-    size = 200000
+    size = 20000
 
     # create file
     dsm.mtxdb_init(filename)
@@ -47,7 +47,7 @@ The example can be run as follows (will take a few minutes)::
 
     # smaller tilesize - more parallelism, but more
     # overhead from task management
-    tilesize = 20000
+    tilesize = 2000
     c = dsm.dask_array_mult(filename, 'A', 'B', tilesize)
 
     print c[:10, :10]
@@ -57,6 +57,7 @@ The example can be run as follows (will take a few minutes)::
 
     os.remove(filename)
 
+And using dask.distributed this computation can be run across several hosts.
 
 Matrix Multiplication
 ---------------------
