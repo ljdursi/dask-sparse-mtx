@@ -1,0 +1,383 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dask_sparse_mtx &#8212; dask-sparse-mtx 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="dask-sparse-mtx 0.1 documentation" href="#" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">dask-sparse-mtx 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-dask_sparse_mtx">
+<span id="dask-sparse-mtx"></span><h1>dask_sparse_mtx<a class="headerlink" href="#module-dask_sparse_mtx" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>This is a simple demo showing how to use dask delayed and dask arrays
+to multiply sparse matricies loaded in lazily into memory (here, from
+an sqlite3 database).</p>
+<p>Either approach uses <code class="docutils literal"><span class="pre">dask.delayed</span></code> to wrap reading tiles of the matrix
+into tasks, and then either manually (using
+<a class="reference internal" href="#module-dask_sparse_mtx.dask_delayed_mult" title="dask_sparse_mtx.dask_delayed_mult"><code class="xref py py-func docutils literal"><span class="pre">dask_sparse_mtx.dask_delayed_mult()</span></code></a>) or using the infrastructure
+provided by <code class="docutils literal"><span class="pre">dask.array</span></code> (using <a class="reference internal" href="#module-dask_sparse_mtx.dask_array_mult" title="dask_sparse_mtx.dask_array_mult"><code class="xref py py-func docutils literal"><span class="pre">dask_sparse_mtx.dask_array_mult()</span></code></a>)
+multiplies the two matrices in a tiled manner:</p>
+<div class="math">
+<p><img src="_images/math/670e5a071506f2c6b2b42d54a4f7d1697f90cdd9.png" alt="\left( \begin{array}{c|c|c|c} C_{1,1} &amp; C_{1,2} &amp; \dots &amp; C_{1,M} \\ \hline C_{2,1} &amp; C_{2,2} &amp; \dots &amp; C_{2,M} \\ \hline \dots &amp; \dots &amp; \dots &amp; \dots \\ \hline C_{N,1} &amp; C_{N,2} &amp; \dots &amp; C_{N,M} \\ \end{array} \right ) &amp; = \left( \begin{array}{c|c|c|c} A_{1,1} &amp; A_{1,2} &amp; \dots &amp; A_{1,K} \\ \hline A_{2,1} &amp; A_{2,2} &amp; \dots &amp; A_{2,K} \\ \hline \dots &amp; \dots &amp; \dots &amp; \dots \\ \hline A_{N,1} &amp; A_{N,2} &amp; \dots &amp; A_{N,K} \\ \end{array} \right ) \left( \begin{array}{c|c|c|c} B_{1,1} &amp; B_{1,2} &amp; \dots &amp; B_{1,M} \\ \hline B_{2,1} &amp; B_{2,2} &amp; \dots &amp; B_{2,M} \\ \hline \dots &amp; \dots &amp; \dots &amp; \dots \\ \hline B_{K,1} &amp; B_{K,2} &amp; \dots &amp; B_{K,M} \\ \end{array} \right )
+
+C_{i,j} &amp; = \sum_{k}^K A_{i,k} B_{k,j}"/></p>
+</div><p>where the multiplication in the second line above is matrix multiplication.</p>
+<p>The example can be run as follows (will take a few minutes):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">dask.multiprocessing</span>
+<span class="kn">import</span> <span class="nn">dask_sparse_mtx</span> <span class="k">as</span> <span class="nn">dsm</span>
+
+<span class="n">dask</span><span class="o">.</span><span class="n">set_options</span><span class="p">(</span><span class="n">get</span><span class="o">=</span><span class="n">dask</span><span class="o">.</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
+
+<span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;test.db&quot;</span>
+<span class="n">size</span> <span class="o">=</span> <span class="mi">200000</span>
+
+<span class="c1"># create file</span>
+<span class="n">dsm</span><span class="o">.</span><span class="n">mtxdb_init</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+<span class="c1"># create matrices and write them; their product</span>
+<span class="c1"># will be the identity matrix</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">dsm</span><span class="o">.</span><span class="n">mtx_permutation</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">dsm</span><span class="o">.</span><span class="n">mtx_transpose</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="n">dsm</span><span class="o">.</span><span class="n">mtxdb_add_matrix_from_dict</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+<span class="n">dsm</span><span class="o">.</span><span class="n">mtxdb_add_matrix_from_dict</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+<span class="c1"># smaller tilesize - more parallelism, but more</span>
+<span class="c1"># overhead from task management</span>
+<span class="n">tilesize</span> <span class="o">=</span> <span class="mi">20000</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">dsm</span><span class="o">.</span><span class="n">dask_array_mult</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">tilesize</span><span class="p">)</span>
+
+<span class="nb">print</span> <span class="n">c</span><span class="p">[:</span><span class="mi">10</span><span class="p">,</span> <span class="p">:</span><span class="mi">10</span><span class="p">]</span>
+
+<span class="k">if</span> <span class="n">dsm</span><span class="o">.</span><span class="n">mtx_is_identity</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+    <span class="nb">print</span> <span class="s2">&quot;Success!&quot;</span>
+
+<span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="matrix-multiplication">
+<h2>Matrix Multiplication<a class="headerlink" href="#matrix-multiplication" title="Permalink to this headline">¶</a></h2>
+<p>Matrix multiplication is performed by either <a class="reference internal" href="#module-dask_sparse_mtx.dask_delayed_mult" title="dask_sparse_mtx.dask_delayed_mult"><code class="xref py py-func docutils literal"><span class="pre">dask_sparse_mtx.dask_delayed_mult()</span></code></a>
+or <a class="reference internal" href="#module-dask_sparse_mtx.dask_array_mult" title="dask_sparse_mtx.dask_array_mult"><code class="xref py py-func docutils literal"><span class="pre">dask_sparse_mtx.dask_array_mult()</span></code></a>:</p>
+<span class="target" id="module-dask_sparse_mtx.dask_delayed_mult"></span><dl class="docutils">
+<dt>Multiply two sparse matrices in the database</dt>
+<dd><p class="first">using dask.delayed and task parallelism.</p>
+<p>Pros: high control over tiles size, distribution
+Cons: larger memory usage in intermediate steps as</p>
+<blockquote class="last">
+<div>tiles can&#8217;t be mutated</div></blockquote>
+</dd>
+</dl>
+<dl class="function">
+<dt id="dask_sparse_mtx.dask_delayed_mult.dask_delayed_mult">
+<code class="descclassname">dask_sparse_mtx.dask_delayed_mult.</code><code class="descname">dask_delayed_mult</code><span class="sig-paren">(</span><em>dbname</em>, <em>a</em>, <em>b</em>, <em>tilesize</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.dask_delayed_mult.dask_delayed_mult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multiplies two sparse matrices from the matrix db
+using dask.delayed and task parallelism</p>
+<p>TODO: better reduction over intermediate terms</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dbname</strong> &#8211; Filename of the sparse matrix db</li>
+<li><strong>a</strong> &#8211; Name of matrix A in the db</li>
+<li><strong>b</strong> &#8211; Name of matrix B in the db</li>
+<li><strong>tilesize</strong> &#8211; int - size of the (square) tiles
+read in to do the multiplication</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dictionary of sparse.COO matrix tiles
+- eg c[(i,j)] is the i, jth tile of product</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<span class="target" id="module-dask_sparse_mtx.dask_array_mult"></span><dl class="docutils">
+<dt>Multiply two sparse matrices in the database</dt>
+<dd><p class="first">by constructing a dask array from the tiles</p>
+<dl class="docutils">
+<dt>Pros: Makes better use of the scheduler, esp for large numbers of tiles</dt>
+<dd>Don&#8217;t have to think about de-tiling final result</dd>
+</dl>
+<p class="last">Cons: Less control of tiling in intermediate and final stages</p>
+</dd>
+</dl>
+<dl class="function">
+<dt id="dask_sparse_mtx.dask_array_mult.dask_array_mult">
+<code class="descclassname">dask_sparse_mtx.dask_array_mult.</code><code class="descname">dask_array_mult</code><span class="sig-paren">(</span><em>dbname</em>, <em>a</em>, <em>b</em>, <em>tilesize</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.dask_array_mult.dask_array_mult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multiplies two sparse matrices from the matrix db
+using dask.arrays</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dbname</strong> &#8211; Filename of the sparse matrix db</li>
+<li><strong>a</strong> &#8211; Name of matrix A in the db</li>
+<li><strong>b</strong> &#8211; Name of matrix B in the db</li>
+<li><strong>tilesize</strong> &#8211; int - size of the (square) tiles
+read in to do the multiplication</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">sparse.COO - single sparse matrix final result</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="sparse-matrix-db">
+<h2>Sparse Matrix DB<a class="headerlink" href="#sparse-matrix-db" title="Permalink to this headline">¶</a></h2>
+<p>These rely on routines for reading/writing the sparse matrices (in COO format)
+into the sqlite3 db:</p>
+<span class="target" id="module-dask_sparse_mtx"></span><dl class="function">
+<dt id="dask_sparse_mtx.mtxdb_init">
+<code class="descclassname">dask_sparse_mtx.</code><code class="descname">mtxdb_init</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtxdb_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes an sqlite3 db for writing sparse matrices.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> &#8211; name of sqlite3 db file to create</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dask_sparse_mtx.mtxdb_add_matrix_from_dict">
+<code class="descclassname">dask_sparse_mtx.</code><code class="descname">mtxdb_add_matrix_from_dict</code><span class="sig-paren">(</span><em>filename</em>, <em>mtxname</em>, <em>mtxdict</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtxdb_add_matrix_from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a matrix in COO format to sqlite3 db &#8216;filename&#8217;.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename</strong> &#8211; name of sqlite3 db in which to store the matrix</li>
+<li><strong>mtxname</strong> &#8211; name of matrix (string)</li>
+<li><strong>mtxdict</strong> &#8211; dict of form (row, col): value containing matrix
+coordinates and data</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dask_sparse_mtx.mtxdb_read_chunk">
+<code class="descclassname">dask_sparse_mtx.</code><code class="descname">mtxdb_read_chunk</code><span class="sig-paren">(</span><em>filename</em>, <em>mtxname</em>, <em>rows=None</em>, <em>cols=None</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtxdb_read_chunk" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Reads a whole or partial matrix from a sqlite3 db into</dt>
+<dd>a mod:<cite>sparse</cite> COO matrix</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filename</strong> &#8211; name of sqlite3 db from which to read the matrix</li>
+<li><strong>mtxname</strong> &#8211; name of matrix (string)</li>
+<li><strong>rows</strong> &#8211; optional tuple containing the slice of rows to read in,
+eg rows=(100,200) will read in rows 100..199.  If None,
+will read all rows</li>
+<li><strong>cols</strong> &#8211; as with rows, but for columns</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">mod:<cite>sparse</cite> COO matrix</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dask_sparse_mtx.mtxdb_matrix_shape">
+<code class="descclassname">dask_sparse_mtx.</code><code class="descname">mtxdb_matrix_shape</code><span class="sig-paren">(</span><em>filename</em>, <em>mtxname</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtxdb_matrix_shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the shape of a sparse matrix in the db.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filename</strong> &#8211; name of the sqlite3 db in which the matrix is stored</li>
+<li><strong>mtname</strong> &#8211; name of the matrix(string)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">(rowmin, rowmax, colmin, colmax): min/max of rows and columns</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="sparse-matrix-helper-methods">
+<h2>Sparse Matrix Helper Methods<a class="headerlink" href="#sparse-matrix-helper-methods" title="Permalink to this headline">¶</a></h2>
+<p>And finally there are helper routines for creating simple permutation
+matricies useful for tests:</p>
+<span class="target" id="module-dask_sparse_mtx"></span><dl class="function">
+<dt id="dask_sparse_mtx.mtx_permutation">
+<code class="descclassname">dask_sparse_mtx.</code><code class="descname">mtx_permutation</code><span class="sig-paren">(</span><em>size</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtx_permutation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a matrix in COO format as a dictionary
+describing a permutation matrix.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>size</strong> &#8211; size of (necessarily square) permutation matrix</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dictionary of (row, col): val matrix entries</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dask_sparse_mtx.mtx_transpose">
+<code class="descclassname">dask_sparse_mtx.</code><code class="descname">mtx_transpose</code><span class="sig-paren">(</span><em>dictmtx</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtx_transpose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns transposes of a matrix in COO format (expressed as a dict).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dictmtx</strong> &#8211; dictionary containing COO matrix</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dictionary of (row, col): val matrix entries</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dask_sparse_mtx.mtx_is_identity">
+<code class="descclassname">dask_sparse_mtx.</code><code class="descname">mtx_is_identity</code><span class="sig-paren">(</span><em>mtx</em><span class="sig-paren">)</span><a class="headerlink" href="#dask_sparse_mtx.mtx_is_identity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if matrix (dict or sparse.COO) is the identity matrix
+False otherwise</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mtx</strong> &#8211; sparse.COO or dict matrix</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Bool: True if identity</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">dask_sparse_mtx</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#matrix-multiplication">Matrix Multiplication</a></li>
+<li><a class="reference internal" href="#sparse-matrix-db">Sparse Matrix DB</a></li>
+<li><a class="reference internal" href="#sparse-matrix-helper-methods">Sparse Matrix Helper Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">dask-sparse-mtx 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Jonathan Dursi.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+    </div>
+  </body>
+</html>
